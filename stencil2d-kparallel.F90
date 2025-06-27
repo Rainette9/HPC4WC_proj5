@@ -8,8 +8,8 @@
 
 ! Driver for apply_diffusion() that sets up fields and does timings
 program main
-    use m_utils, only: timer_start, timer_end, timer_get, is_master, num_rank, write_field_to_file
     use omp_lib
+    use m_utils, only: timer_start, timer_end, timer_get, is_master, num_rank, write_field_to_file
     implicit none
 
     ! constants
@@ -39,16 +39,18 @@ program main
 #endif
 
     call init()
+    
+    !$omp parallel
+    !$omp master
+    write(*,*) '#threads = ', omp_get_num_threads()
+    !$omp end master
+    !$omp end parallel
 
     if ( is_master() ) then
         write(*, '(a)') '# ranks nx ny nz num_iter time'
         write(*, '(a)') 'data = np.array( [ \'
     end if
-!$omp parallel
-!$omp master
-write(*,*) '#threads = ', omp_get_num_threads()
-!$omp end master
-!$omp end parallel
+
     if ( scan ) num_setups = size(nx_setups) * size(ny_setups)
     do cur_setup = 0, num_setups - 1
 
@@ -86,6 +88,7 @@ write(*,*) '#threads = ', omp_get_num_threads()
         call cleanup()
 
         runtime = timer_get( timer_work )
+        
         if ( is_master() ) &
             write(*, '(a, i5, a, i5, a, i5, a, i5, a, i8, a, e15.7, a)') &
                 '[', num_rank(), ',', nx, ',', ny, ',', nz, ',', num_iter, ',', runtime, '], \'
@@ -136,9 +139,9 @@ contains
         do iter = 1, num_iter
                     
             call update_halo( in_field )
-            !$omp parallel do default(none) private(tmp1_field, laplap,  i, j) shared(in_field, out_field, alpha, num_halo, num_iter, iter, nx,ny,nz) 
-            do k = 1, nz
 
+            !$omp parallel do default(none) private(tmp1_field, laplap) shared(nz, num_halo, ny, nx, in_field, num_iter, out_field, alpha, iter)
+            do k = 1, nz
                 do j = 1 + num_halo - 1, ny + num_halo + 1
                 do i = 1 + num_halo - 1, nx + num_halo + 1
                     tmp1_field(i, j) = -4._wp * in_field(i, j, k)        &
@@ -162,9 +165,10 @@ contains
                     
                 end do
                 end do
-            end do
-                !$omp end parallel do 
 
+            end do
+            !$omp end parallel do
+            
         end do
             
     end subroutine apply_diffusion
