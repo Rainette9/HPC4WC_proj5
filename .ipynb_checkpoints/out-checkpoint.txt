@@ -1,0 +1,361 @@
+out = [None] * 73
+ #threads =            1
+# ranks nx ny nz num_iter time
+out[1] = np.array( [ \
+[    1,  128,  128,   64,    1024,  0.7584624E+00], \
+] )
+ #threads =            2
+# ranks nx ny nz num_iter time
+out[2] = np.array( [ \
+[    1,  128,  128,   64,    1024,  0.4384788E+00], \
+] )
+ #threads =            3
+# ranks nx ny nz num_iter time
+out[3] = np.array( [ \
+[    1,  128,  128,   64,    1024,  0.3369616E+00], \
+] )
+ #threads =            4
+# ranks nx ny nz num_iter time
+out[4] = np.array( [ \
+[    1,  128,  128,   64,    1024,  0.3275143E+00], \
+] )
+ #threads =            5
+# ranks nx ny nz num_iter time
+out[5] = np.array( [ \
+[    1,  128,  128,   64,    1024,  0.3679523E+00], \
+] )
+ #threads =            6
+# ranks nx ny nz num_iter time
+out[6] = np.array( [ \
+[    1,  128,  128,   64,    1024,  0.2969876E+00], \
+] )
+ #threads =            7
+# ranks nx ny nz num_iter time
+out[7] = np.array( [ \
+[    1,  128,  128,   64,    1024,  0.2823929E+00], \
+] )
+ #threads =            8
+# ranks nx ny nz num_iter time
+out[8] = np.array( [ \
+[    1,  128,  128,   64,    1024,  0.2673213E+00], \
+] )
+ #threads =            9
+# ranks nx ny nz num_iter time
+out[9] = np.array( [ \
+[    1,  128,  128,   64,    1024,  0.2804816E+00], \
+] )
+ #threads =           10
+# ranks nx ny nz num_iter time
+out[10] = np.array( [ \
+[    1,  128,  128,   64,    1024,  0.2576425E+00], \
+] )
+ #threads =           11
+# ranks nx ny nz num_iter time
+out[11] = np.array( [ \
+[    1,  128,  128,   64,    1024,  0.2581942E+00], \
+] )
+ #threads =           12
+# ranks nx ny nz num_iter time
+out[12] = np.array( [ \
+[    1,  128,  128,   64,    1024,  0.2116492E+00], \
+] )
+ #threads =           13
+# ranks nx ny nz num_iter time
+out[13] = np.array( [ \
+[    1,  128,  128,   64,    1024,  0.2585329E+00], \
+] )
+ #threads =           14
+# ranks nx ny nz num_iter time
+out[14] = np.array( [ \
+[    1,  128,  128,   64,    1024,  0.2473716E+00], \
+] )
+ #threads =           15
+# ranks nx ny nz num_iter time
+out[15] = np.array( [ \
+[    1,  128,  128,   64,    1024,  0.2981127E+00], \
+] )
+ #threads =           16
+# ranks nx ny nz num_iter time
+out[16] = np.array( [ \
+[    1,  128,  128,   64,    1024,  0.2808320E+00], \
+] )
+ #threads =           17
+# ranks nx ny nz num_iter time
+out[17] = np.array( [ \
+[    1,  128,  128,   64,    1024,  0.1957190E+00], \
+] )
+ #threads =           18
+# ranks nx ny nz num_iter time
+out[18] = np.array( [ \
+[    1,  128,  128,   64,    1024,  0.1961166E+00], \
+] )
+ #threads =           19
+# ranks nx ny nz num_iter time
+out[19] = np.array( [ \
+[    1,  128,  128,   64,    1024,  0.2463014E+00], \
+] )
+ #threads =           20
+# ranks nx ny nz num_iter time
+out[20] = np.array( [ \
+[    1,  128,  128,   64,    1024,  0.2486844E+00], \
+] )
+ #threads =           21
+# ranks nx ny nz num_iter time
+out[21] = np.array( [ \
+[    1,  128,  128,   64,    1024,  0.1968582E+00], \
+] )
+ #threads =           22
+# ranks nx ny nz num_iter time
+out[22] = np.array( [ \
+[    1,  128,  128,   64,    1024,  0.2410900E+00], \
+] )
+ #threads =           23
+# ranks nx ny nz num_iter time
+out[23] = np.array( [ \
+[    1,  128,  128,   64,    1024,  0.2920867E+00], \
+] )
+ #threads =           24
+# ranks nx ny nz num_iter time
+out[24] = np.array( [ \
+[    1,  128,  128,   64,    1024,  0.2786022E+00], \
+] )
+ #threads =           25
+# ranks nx ny nz num_iter time
+out[25] = np.array( [ \
+[    1,  128,  128,   64,    1024,  0.2311654E+00], \
+] )
+ #threads =           26
+# ranks nx ny nz num_iter time
+out[26] = np.array( [ \
+[    1,  128,  128,   64,    1024,  0.2827113E+00], \
+] )
+ #threads =           27
+# ranks nx ny nz num_iter time
+out[27] = np.array( [ \
+[    1,  128,  128,   64,    1024,  0.2918455E+00], \
+] )
+ #threads =           28
+# ranks nx ny nz num_iter time
+out[28] = np.array( [ \
+[    1,  128,  128,   64,    1024,  0.2911421E+00], \
+] )
+ #threads =           29
+# ranks nx ny nz num_iter time
+out[29] = np.array( [ \
+[    1,  128,  128,   64,    1024,  0.2382100E+00], \
+] )
+ #threads =           30
+# ranks nx ny nz num_iter time
+out[30] = np.array( [ \
+[    1,  128,  128,   64,    1024,  0.2414988E+00], \
+] )
+ #threads =           31
+# ranks nx ny nz num_iter time
+out[31] = np.array( [ \
+[    1,  128,  128,   64,    1024,  0.2535591E+00], \
+] )
+ #threads =           32
+# ranks nx ny nz num_iter time
+out[32] = np.array( [ \
+[    1,  128,  128,   64,    1024,  0.2338355E+00], \
+] )
+ #threads =           33
+# ranks nx ny nz num_iter time
+out[33] = np.array( [ \
+[    1,  128,  128,   64,    1024,  0.2869253E+00], \
+] )
+ #threads =           34
+# ranks nx ny nz num_iter time
+out[34] = np.array( [ \
+[    1,  128,  128,   64,    1024,  0.2350518E+00], \
+] )
+ #threads =           35
+# ranks nx ny nz num_iter time
+out[35] = np.array( [ \
+[    1,  128,  128,   64,    1024,  0.2776326E+00], \
+] )
+ #threads =           36
+# ranks nx ny nz num_iter time
+out[36] = np.array( [ \
+[    1,  128,  128,   64,    1024,  0.2407978E+00], \
+] )
+ #threads =           37
+# ranks nx ny nz num_iter time
+out[37] = np.array( [ \
+[    1,  128,  128,   64,    1024,  0.2402117E+00], \
+] )
+ #threads =           38
+# ranks nx ny nz num_iter time
+out[38] = np.array( [ \
+[    1,  128,  128,   64,    1024,  0.2439712E+00], \
+] )
+ #threads =           39
+# ranks nx ny nz num_iter time
+out[39] = np.array( [ \
+[    1,  128,  128,   64,    1024,  0.2436235E+00], \
+] )
+ #threads =           40
+# ranks nx ny nz num_iter time
+out[40] = np.array( [ \
+[    1,  128,  128,   64,    1024,  0.2444165E+00], \
+] )
+ #threads =           41
+# ranks nx ny nz num_iter time
+out[41] = np.array( [ \
+[    1,  128,  128,   64,    1024,  0.3581368E+00], \
+] )
+ #threads =           42
+# ranks nx ny nz num_iter time
+out[42] = np.array( [ \
+[    1,  128,  128,   64,    1024,  0.2815716E+00], \
+] )
+ #threads =           43
+# ranks nx ny nz num_iter time
+out[43] = np.array( [ \
+[    1,  128,  128,   64,    1024,  0.2000321E+00], \
+] )
+ #threads =           44
+# ranks nx ny nz num_iter time
+out[44] = np.array( [ \
+[    1,  128,  128,   64,    1024,  0.2421169E+00], \
+] )
+ #threads =           45
+# ranks nx ny nz num_iter time
+out[45] = np.array( [ \
+[    1,  128,  128,   64,    1024,  0.2358279E+00], \
+] )
+ #threads =           46
+# ranks nx ny nz num_iter time
+out[46] = np.array( [ \
+[    1,  128,  128,   64,    1024,  0.2474691E+00], \
+] )
+ #threads =           47
+# ranks nx ny nz num_iter time
+out[47] = np.array( [ \
+[    1,  128,  128,   64,    1024,  0.2474485E+00], \
+] )
+ #threads =           48
+# ranks nx ny nz num_iter time
+out[48] = np.array( [ \
+[    1,  128,  128,   64,    1024,  0.2413364E+00], \
+] )
+ #threads =           49
+# ranks nx ny nz num_iter time
+out[49] = np.array( [ \
+[    1,  128,  128,   64,    1024,  0.2029664E+00], \
+] )
+ #threads =           50
+# ranks nx ny nz num_iter time
+out[50] = np.array( [ \
+[    1,  128,  128,   64,    1024,  0.2510859E+00], \
+] )
+ #threads =           51
+# ranks nx ny nz num_iter time
+out[51] = np.array( [ \
+[    1,  128,  128,   64,    1024,  0.4024741E+00], \
+] )
+ #threads =           52
+# ranks nx ny nz num_iter time
+out[52] = np.array( [ \
+[    1,  128,  128,   64,    1024,  0.2033464E+00], \
+] )
+ #threads =           53
+# ranks nx ny nz num_iter time
+out[53] = np.array( [ \
+[    1,  128,  128,   64,    1024,  0.2423106E+00], \
+] )
+ #threads =           54
+# ranks nx ny nz num_iter time
+out[54] = np.array( [ \
+[    1,  128,  128,   64,    1024,  0.3213110E+00], \
+] )
+ #threads =           55
+# ranks nx ny nz num_iter time
+out[55] = np.array( [ \
+[    1,  128,  128,   64,    1024,  0.4135546E+00], \
+] )
+ #threads =           56
+# ranks nx ny nz num_iter time
+out[56] = np.array( [ \
+[    1,  128,  128,   64,    1024,  0.3818883E+00], \
+] )
+ #threads =           57
+# ranks nx ny nz num_iter time
+out[57] = np.array( [ \
+[    1,  128,  128,   64,    1024,  0.2549032E+00], \
+] )
+ #threads =           58
+# ranks nx ny nz num_iter time
+out[58] = np.array( [ \
+[    1,  128,  128,   64,    1024,  0.3620334E+00], \
+] )
+ #threads =           59
+# ranks nx ny nz num_iter time
+out[59] = np.array( [ \
+[    1,  128,  128,   64,    1024,  0.4008041E+00], \
+] )
+ #threads =           60
+# ranks nx ny nz num_iter time
+out[60] = np.array( [ \
+[    1,  128,  128,   64,    1024,  0.3084046E+00], \
+] )
+ #threads =           61
+# ranks nx ny nz num_iter time
+out[61] = np.array( [ \
+[    1,  128,  128,   64,    1024,  0.3289728E+00], \
+] )
+ #threads =           62
+# ranks nx ny nz num_iter time
+out[62] = np.array( [ \
+[    1,  128,  128,   64,    1024,  0.3761543E+00], \
+] )
+ #threads =           63
+# ranks nx ny nz num_iter time
+out[63] = np.array( [ \
+[    1,  128,  128,   64,    1024,  0.2637646E+00], \
+] )
+ #threads =           64
+# ranks nx ny nz num_iter time
+out[64] = np.array( [ \
+[    1,  128,  128,   64,    1024,  0.3643504E+00], \
+] )
+ #threads =           65
+# ranks nx ny nz num_iter time
+out[65] = np.array( [ \
+[    1,  128,  128,   64,    1024,  0.2563161E+00], \
+] )
+ #threads =           66
+# ranks nx ny nz num_iter time
+out[66] = np.array( [ \
+[    1,  128,  128,   64,    1024,  0.4575502E+00], \
+] )
+ #threads =           67
+# ranks nx ny nz num_iter time
+out[67] = np.array( [ \
+[    1,  128,  128,   64,    1024,  0.2566350E+00], \
+] )
+ #threads =           68
+# ranks nx ny nz num_iter time
+out[68] = np.array( [ \
+[    1,  128,  128,   64,    1024,  0.3508727E+00], \
+] )
+ #threads =           69
+# ranks nx ny nz num_iter time
+out[69] = np.array( [ \
+[    1,  128,  128,   64,    1024,  0.3363987E+00], \
+] )
+ #threads =           70
+# ranks nx ny nz num_iter time
+out[70] = np.array( [ \
+[    1,  128,  128,   64,    1024,  0.3198214E+00], \
+] )
+ #threads =           71
+# ranks nx ny nz num_iter time
+out[71] = np.array( [ \
+[    1,  128,  128,   64,    1024,  0.3589371E+00], \
+] )
+ #threads =           72
+# ranks nx ny nz num_iter time
+out[72] = np.array( [ \
+[    1,  128,  128,   64,    1024,  0.4170772E+00], \
+] )

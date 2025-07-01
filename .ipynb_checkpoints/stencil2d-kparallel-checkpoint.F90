@@ -8,26 +8,24 @@
 
 ! Driver for apply_diffusion() that sets up fields and does timings
 program main
-    use omp_lib
-    use m_utils, only: timer_start, timer_end, timer_get, is_master, num_rank, write_field_to_file
-    use m_partitioner
-    use mpi, only: &
-    MPI_FLOAT, MPI_DOUBLE, MPI_SUCCESS, &
-    MPI_Comm_Rank, MPI_Comm_Size, MPI_Barrier
+    use mpi, only: MPI_COMM_WORLD
+    use m_utils, only: timer_init, timer_start, timer_end, timer_get, is_master, num_rank, write_field_to_file
+    use m_partitioner, only: Partitioner
     implicit none
 
     ! constants
     integer, parameter :: wp = 4
-    
+
     ! local
-    integer :: nx, ny, nz, num_iter
+    integer :: global_nx, global_ny, global_nz, num_iter
+    integer :: nx, ny, nz
     logical :: scan
-    
+
     integer :: num_halo = 2
     real (kind=wp) :: alpha = 1.0_wp / 32.0_wp
 
-    real (kind=wp), allocatable :: in_field(:, :, :)
-    real (kind=wp), allocatable :: out_field(:, :, :)
+    real (kind=wp), allocatable :: in_field(:, :, :), f_in(:, :, :)
+    real (kind=wp), allocatable :: out_field(:, :, :), f_out(:, :, :)
 
     integer :: timer_work
     real (kind=8) :: runtime
@@ -35,6 +33,8 @@ program main
     integer :: cur_setup, num_setups = 1
     integer :: nx_setups(7) = (/ 16, 32, 48, 64, 96, 128, 192 /)
     integer :: ny_setups(7) = (/ 16, 32, 48, 64, 96, 128, 192 /)
+
+    type(Partitioner) :: p
 
 #ifdef CRAYPAT
     include "pat_apif.h"
@@ -64,10 +64,8 @@ program main
         end if
 
         ! include partition MPI here 
-      call MPI_Init(ierr)
-      call MPI_Comm_rank(MPI_COMM_WORLD, rank, ierr)
-      call MPI_Comm_size(MPI_COMM_WORLD, size, ierr)
-        write(*,*) 'Hello from rank', rank, 'of', size
+        p = Partitioner(MPI_COMM_WORLD, (/global_nx, global_ny, global_nz/), num_halo, periodic=(/.true., .true./))
+
         call setup() ! only for rank=0
 
         if ( .not. scan .and. is_master() ) &
@@ -114,7 +112,6 @@ program main
     call finalize()
 
 contains
-
 
     ! Integrate 4th-order diffusion equation by a certain number of iterations.
     !

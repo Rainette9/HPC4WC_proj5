@@ -5,8 +5,9 @@
 !> @author Michal Sudwoj
 !> @author Oliver Fuhrer
 !> @date 2020-06-15
+
 module m_partitioner
-  use, intrinsic :: iso_fortran_env, only: REAL32, REAL64, error_unit
+  use, intrinsic :: iso_fortran_env, only: REAL32, error_unit
   use mpi, only: &
     MPI_FLOAT, MPI_DOUBLE, MPI_SUCCESS, &
     MPI_Comm_Rank, MPI_Comm_Size, MPI_Barrier
@@ -16,6 +17,31 @@ module m_partitioner
 
   implicit none
   private
+
+  ! interface
+  !   subroutine MPI_Gather(sendbuf, sendcount, sendtype, recvbuf, recvcount, recvtype, root, comm, ierror)
+  !     implicit none
+  !     type(*), dimension(..), intent(in)    :: sendbuf
+  !     type(*), dimension(..), intent(inout) :: recvbuf
+  !     integer, intent(in) :: sendcount, sendtype, recvcount, recvtype, root, comm
+  !     integer, intent(out) :: ierror
+  !   end subroutine MPI_Gather
+  !   subroutine MPI_Allgather(sendbuf, sendcount, sendtype, recvbuf, recvcount, recvtype, comm, ierror)
+  !     implicit none
+  !     type(*), dimension(..), intent(in)    :: sendbuf
+  !     type(*), dimension(..), intent(inout) :: recvbuf
+  !     integer, intent(in) :: sendcount, sendtype, recvcount, recvtype, comm
+  !     integer, intent(out) :: ierror
+  !   end subroutine MPI_Allgather
+  !   subroutine MPI_Scatter(sendbuf, sendcount, sendtype, recvbuf, recvcount, recvtype, root, comm, ierror)
+  !     implicit none
+  !     ! Use assumed-type and assumed-shape to cover both real32 and real64
+  !     type(*), dimension(..), intent(in) :: sendbuf
+  !     type(*), dimension(..), intent(inout) :: recvbuf
+  !     integer, intent(in) :: sendcount, sendtype, recvcount, recvtype, root, comm
+  !     integer, intent(out) :: ierror
+  !   end subroutine MPI_Scatter
+  ! end interface
 
   logical, parameter :: debug = .false.
 
@@ -49,14 +75,12 @@ module m_partitioner
     procedure, public :: right
     procedure, public :: top
     procedure, public :: bottom
-    generic,   public :: scatter => scatter_f32, scatter_f64
-    generic,   public :: gather => gather_f32, gather_f64
+    generic,   public :: scatter => scatter_f32
+    generic,   public :: gather => gather_f32
     procedure, public :: compute_domain
 
     procedure         :: scatter_f32
-    procedure         :: scatter_f64
     procedure         :: gather_f32
-    procedure         :: gather_f64
     procedure         :: setup_grid
     procedure         :: get_neighbor_rank
     procedure, nopass :: cyclic_offset
@@ -310,71 +334,7 @@ end function
     r = recvbuf(:i_end - i_start + 1, :j_end - j_start + 1, :)
   end function
 
-  !> @brief Scatter a global field from a root rank to the workers (f64)
-  function scatter_f64(this, field, root) result(r)
-    class(Partitioner), intent(in) :: this
-    real(REAL64), intent(in) :: field(:, :, :)
-    integer, optional :: root
-    real(REAL64), allocatable :: r(:, :, :)
-
-    integer :: root_
-    real(REAL64), allocatable :: sendbuf(:, :, :, :)
-    integer :: rank
-    integer :: j_start
-    integer :: i_start
-    integer :: j_end
-    integer :: i_end
-    real(REAL64), allocatable :: recvbuf(:, :, :)
-    integer :: ierror
-
-    if (present(root)) then
-      root_ = root
-    else
-      root_ = 0
-    end if
-
-    if (this%rank_ == root_) then
-      call error(any(shape(field) /= this%global_shape_), 'Field does not have the correct shape')
-    end if
-    call error(.not. (0 <= root_ .and. root_ < this%num_ranks_), 'Root processor must be a valid rank')
-
-    if (this%num_ranks_ == 1) then
-      r = field
-      return
-    end if
-
-    if (this%rank_ == root_) then
-      allocate(sendbuf(this%max_shape_(1), this%max_shape_(2), this%max_shape_(3), 0:this%num_ranks_ - 1))
-
-      do rank = 0, this%num_ranks_ - 1
-        i_start = this%domains_(rank, 1) + 1
-        j_start = this%domains_(rank, 2) + 1
-        i_end   = this%domains_(rank, 3)
-        j_end   = this%domains_(rank, 4)
-
-        sendbuf(:i_end - i_start + 1, :j_end - j_start + 1, :, rank) = field(i_start:i_end, j_start:j_end, :)
-      end do
-    else
-      allocate(sendbuf(0, 0, 0, 0))
-    end if
-
-    allocate(recvbuf(this%max_shape_(1), this%max_shape_(2), this%max_shape_(3)))
-    call MPI_Scatter( &
-      sendbuf, size(recvbuf), MPI_DOUBLE, &
-      recvbuf, size(recvbuf), MPI_DOUBLE, &
-      root_, this%comm_, ierror &
-    )
-    call error(ierror /= 0, 'Problem with MPI_Scatter', code = ierror)
-
-    i_start = this%domain_(1)
-    j_start = this%domain_(2)
-    i_end   = this%domain_(3)
-    j_end   = this%domain_(4)
-
-    r = recvbuf(:i_end - i_start + 1, :j_end - j_start + 1, :)
-  end function
-
-  !> @brief Gather a distributed field from workers to a single global field on a root rank (f32)
+    !> @brief Gather a distributed field from workers to a single global field on a root rank (f32)
   function gather_f32(this, field, root) result(r)
     class(Partitioner), intent(in) :: this
     real(REAL32), intent(in) :: field(:, :, :)
@@ -386,8 +346,8 @@ end function
     integer :: i_start
     integer :: j_end
     integer :: i_end
-    real(REAL32), allocatable :: sendbuf32(:, :, :)
-    real(REAL32), allocatable :: recvbuf32(:, :, :, :)
+    real(REAL32), allocatable :: sendbuf(:, :, :)
+    real(REAL32), allocatable :: recvbuf(:, :, :, :)
     integer :: ierror
     real(REAL32), allocatable :: global_field(:, :, :)
     integer :: rank
@@ -411,26 +371,26 @@ end function
     i_end   = this%domain_(3)
     j_end   = this%domain_(4)
 
-    allocate(sendbuf32(this%max_shape_(1), this%max_shape_(2), this%max_shape_(3)))
-    sendbuf32(:i_end - i_start + 1, :j_end - j_start + 1, :) = field
+    allocate(sendbuf(this%max_shape_(1), this%max_shape_(2), this%max_shape_(3)))
+    sendbuf(:i_end - i_start + 1, :j_end - j_start + 1, :) = field
 
     if (this%rank_ == root_ .or. root_ == -1) then
-      allocate(recvbuf32(this%max_shape_(1), this%max_shape_(2), this%max_shape_(3), 0:this%num_ranks_ - 1))
+      allocate(recvbuf(this%max_shape_(1), this%max_shape_(2), this%max_shape_(3), 0:this%num_ranks_ - 1))
     else
-      allocate(recvbuf32(0, 0, 0, 0))
+      allocate(recvbuf(0, 0, 0, 0))
     end if
 
     if (root_ > -1) then
       call MPI_Gather( &
-        sendbuf32, size(sendbuf32), MPI_FLOAT, &
-        recvbuf32, size(sendbuf32), MPI_FLOAT, &
+        sendbuf, size(sendbuf), MPI_FLOAT, &
+        recvbuf, size(sendbuf), MPI_FLOAT, &
         root_, this%comm_, ierror &
       )
       call error(ierror /= MPI_SUCCESS, 'Problem with MPI_Gather', code = ierror)
     else
       call MPI_Allgather( &
-        sendbuf32, size(sendbuf32), MPI_FLOAT, &
-        recvbuf32, size(sendbuf32), MPI_FLOAT, &
+        sendbuf, size(sendbuf), MPI_FLOAT, &
+        recvbuf, size(sendbuf), MPI_FLOAT, &
         this%comm_, ierror &
       )
       call error(ierror /= MPI_SUCCESS, 'Problem with MPI_Allgather', code = ierror)
@@ -444,7 +404,7 @@ end function
         i_end   = this%domains_(rank, 3)
         j_end   = this%domains_(rank, 4)
 
-        global_field(i_start:i_end, j_start:j_end, :) = recvbuf32(:i_end - i_start + 1, :j_end - j_start + 1, :, rank)
+        global_field(i_start:i_end, j_start:j_end, :) = recvbuf(:i_end - i_start + 1, :j_end - j_start + 1, :, rank)
       end do
 
       r = global_field
@@ -452,8 +412,6 @@ end function
       allocate(r(0, 0, 0))
     end if
   end function
-
-
 
   !> @brief Return position of subdomain withoug halo on the global domain
   pure function compute_domain(this) result(subdomain)
@@ -643,4 +601,3 @@ end function
 end module m_partitioner
 
 ! vim: set filetype=fortran expandtab tabstop=2 softtabstop=2 :
-

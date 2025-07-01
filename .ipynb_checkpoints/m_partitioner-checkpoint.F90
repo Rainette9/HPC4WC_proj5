@@ -386,8 +386,8 @@ end function
     integer :: i_start
     integer :: j_end
     integer :: i_end
-    real(REAL32), allocatable :: sendbuf32(:, :, :)
-    real(REAL32), allocatable :: recvbuf32(:, :, :, :)
+    real(REAL32), allocatable :: sendbuf(:, :, :)
+    real(REAL32), allocatable :: recvbuf(:, :, :, :)
     integer :: ierror
     real(REAL32), allocatable :: global_field(:, :, :)
     integer :: rank
@@ -411,26 +411,26 @@ end function
     i_end   = this%domain_(3)
     j_end   = this%domain_(4)
 
-    allocate(sendbuf32(this%max_shape_(1), this%max_shape_(2), this%max_shape_(3)))
-    sendbuf32(:i_end - i_start + 1, :j_end - j_start + 1, :) = field
+    allocate(sendbuf(this%max_shape_(1), this%max_shape_(2), this%max_shape_(3)))
+    sendbuf(:i_end - i_start + 1, :j_end - j_start + 1, :) = field
 
     if (this%rank_ == root_ .or. root_ == -1) then
-      allocate(recvbuf32(this%max_shape_(1), this%max_shape_(2), this%max_shape_(3), 0:this%num_ranks_ - 1))
+      allocate(recvbuf(this%max_shape_(1), this%max_shape_(2), this%max_shape_(3), 0:this%num_ranks_ - 1))
     else
-      allocate(recvbuf32(0, 0, 0, 0))
+      allocate(recvbuf(0, 0, 0, 0))
     end if
 
     if (root_ > -1) then
       call MPI_Gather( &
-        sendbuf32, size(sendbuf32), MPI_FLOAT, &
-        recvbuf32, size(sendbuf32), MPI_FLOAT, &
+        sendbuf, size(sendbuf), MPI_FLOAT, &
+        recvbuf, size(sendbuf), MPI_FLOAT, &
         root_, this%comm_, ierror &
       )
       call error(ierror /= MPI_SUCCESS, 'Problem with MPI_Gather', code = ierror)
     else
       call MPI_Allgather( &
-        sendbuf32, size(sendbuf32), MPI_FLOAT, &
-        recvbuf32, size(sendbuf32), MPI_FLOAT, &
+        sendbuf, size(sendbuf), MPI_FLOAT, &
+        recvbuf, size(sendbuf), MPI_FLOAT, &
         this%comm_, ierror &
       )
       call error(ierror /= MPI_SUCCESS, 'Problem with MPI_Allgather', code = ierror)
@@ -444,7 +444,7 @@ end function
         i_end   = this%domains_(rank, 3)
         j_end   = this%domains_(rank, 4)
 
-        global_field(i_start:i_end, j_start:j_end, :) = recvbuf32(:i_end - i_start + 1, :j_end - j_start + 1, :, rank)
+        global_field(i_start:i_end, j_start:j_end, :) = recvbuf(:i_end - i_start + 1, :j_end - j_start + 1, :, rank)
       end do
 
       r = global_field
@@ -453,7 +453,84 @@ end function
     end if
   end function
 
+  !> @brief Gather a distributed field from workers to a single global field on a root rank (f64)
+  function gather_f64(this, field, root) result(r)
+    class(Partitioner), intent(in) :: this
+    real(REAL64), intent(in) :: field(:, :, :)
+    integer, optional :: root
+    real(REAL64), allocatable :: r(:, :, :)
 
+    integer :: root_
+    integer :: j_start
+    integer :: i_start
+    integer :: j_end
+    integer :: i_end
+    real(REAL64), allocatable :: sendbuf(:, :, :)
+    real(REAL64), allocatable :: recvbuf(:, :, :, :)
+    integer :: ierror
+    real(REAL64), allocatable :: global_field(:, :, :)
+    integer :: rank
+
+    if (present(root)) then
+      root_ = root
+    else
+      root_ = 0
+    end if
+
+    call error(any(shape(field) /= this%shape_), 'Field does not have the correct shape')
+    call error(.not. (-1 <= root_ .and. root_ < this%num_ranks_), 'Root processor must be -1 (all) or a valid rank')
+
+    if (this%num_ranks_ == 1) then
+      r = field
+      return
+    end if
+
+    i_start = this%domain_(1)
+    j_start = this%domain_(2)
+    i_end   = this%domain_(3)
+    j_end   = this%domain_(4)
+
+    allocate(sendbuf(this%max_shape_(1), this%max_shape_(2), this%max_shape_(3)))
+    sendbuf(:i_end - i_start + 1, :j_end - j_start + 1, :) = field
+
+    if (this%rank_ == root_ .or. root_ == -1) then
+      allocate(recvbuf(this%max_shape_(1), this%max_shape_(2), this%max_shape_(3), 0:this%num_ranks_ - 1))
+    else
+      allocate(recvbuf(0, 0, 0, 0))
+    end if
+
+    if (root_ > -1) then
+      call MPI_Gather( &
+        sendbuf, size(sendbuf), MPI_DOUBLE, &
+        recvbuf, size(sendbuf), MPI_DOUBLE, &
+        root_, this%comm_, ierror &
+      )
+      call error(ierror /= MPI_SUCCESS, 'Problem with MPI_Gather', code = ierror)
+    else
+      call MPI_Allgather( &
+        sendbuf, size(sendbuf), MPI_DOUBLE, &
+        recvbuf, size(sendbuf), MPI_DOUBLE, &
+        this%comm_, ierror &
+      )
+      call error(ierror /= MPI_SUCCESS, 'Problem with MPI_Allgather', code = ierror)
+    end if
+
+    if (this%rank_ == root_ .or. root_ == -1) then
+      allocate(global_field(this%global_shape_(1), this%global_shape_(2), this%global_shape_(3)))
+      do rank = 0, this%num_ranks_ - 1
+        i_start = this%domains_(rank, 1) + 1
+        j_start = this%domains_(rank, 2) + 1
+        i_end   = this%domains_(rank, 3)
+        j_end   = this%domains_(rank, 4)
+
+        global_field(i_start:i_end, j_start:j_end, :) = recvbuf(:i_end - i_start + 1, :j_end - j_start + 1, :, rank)
+      end do
+
+      r = global_field
+    else
+      allocate(r(0, 0, 0))
+    end if
+  end function
 
   !> @brief Return position of subdomain withoug halo on the global domain
   pure function compute_domain(this) result(subdomain)

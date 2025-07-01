@@ -6,7 +6,9 @@ VERSION ?= orig
 TARGET = stencil2d-$(VERSION).x
 
 SRCS = m_utils.F90 \
-       stencil2d-$(VERSION).F90
+       m_partitioner.F90 \
+       stencil2d-$(VERSION).F90 
+       
 
 # create object file list
 OBJS := $(SRCS:.F90=.o)
@@ -33,7 +35,7 @@ endif
 endif
 ifeq "$(HOSTNAME)" "santis-ln"
   F90 = mpif90 -ffree-line-length-none #-L/user-tools/env/forge/lib/64 -lmap-sampler
-  FFLAGS = -g1 -O3 -fno-inline -fno-optimize-sibling-calls -march=native -funroll-loops -fopenmp -flto -fno-math-errno
+  FFLAGS = -g1 -O3 -fno-inline -fno-optimize-sibling-calls -march=native -funroll-loops -fopenmp -flto -fno-math-errno -Wall -Wextra -Wconversion -fimplicit-none
 ifdef NOOPT
   FFLAGS = -O0 -g -fbacktrace -fno-fast-math -ffree-line-length-none -fno-backslash \
   -pedantic -Waliasing -Wampersand -Wline-truncation -Wsurprising -Wtabs -Wunderflow \

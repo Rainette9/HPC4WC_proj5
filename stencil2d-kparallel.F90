@@ -10,10 +10,6 @@
 program main
     use omp_lib
     use m_utils, only: timer_start, timer_end, timer_get, is_master, num_rank, write_field_to_file
-    use m_partitioner
-    use mpi, only: &
-    MPI_FLOAT, MPI_DOUBLE, MPI_SUCCESS, &
-    MPI_Comm_Rank, MPI_Comm_Size, MPI_Barrier
     implicit none
 
     ! constants
@@ -63,18 +59,10 @@ program main
             ny = ny_setups( cur_setup / size(ny_setups) + 1 )
         end if
 
-        ! include partition MPI here 
-      call MPI_Init(ierr)
-      call MPI_Comm_rank(MPI_COMM_WORLD, rank, ierr)
-      call MPI_Comm_size(MPI_COMM_WORLD, size, ierr)
-        write(*,*) 'Hello from rank', rank, 'of', size
-        call setup() ! only for rank=0
+        call setup()
 
         if ( .not. scan .and. is_master() ) &
             call write_field_to_file( in_field, num_halo, "in_field.dat" )
-
-
-
 
         ! warmup caches
         call apply_diffusion( in_field, out_field, alpha, num_iter=1 )
@@ -115,84 +103,7 @@ program main
 
 contains
 
-  !> @brief Gather a distributed field from workers to a single global field on a root rank (f64)
-  function gather_f64(this, field, root) result(r)
-    class(Partitioner), intent(in) :: this
-    real(REAL64), intent(in) :: field(:, :, :)
-    integer, optional :: root
-    real(REAL64), allocatable :: r(:, :, :)
 
-    integer :: root_
-    integer :: j_start
-    integer :: i_start
-    integer :: j_end
-    integer :: i_end
-    real(REAL64), allocatable :: sendbuf(:, :, :)
-    real(REAL64), allocatable :: recvbuf(:, :, :, :)
-    integer :: ierror
-    real(REAL64), allocatable :: global_field(:, :, :)
-    integer :: rank
-
-    if (present(root)) then
-      root_ = root
-    else
-      root_ = 0
-    end if
-
-    call error(any(shape(field) /= this%shape_), 'Field does not have the correct shape')
-    call error(.not. (-1 <= root_ .and. root_ < this%num_ranks_), 'Root processor must be -1 (all) or a valid rank')
-
-    if (this%num_ranks_ == 1) then
-      r = field
-      return
-    end if
-
-    i_start = this%domain_(1)
-    j_start = this%domain_(2)
-    i_end   = this%domain_(3)
-    j_end   = this%domain_(4)
-
-    allocate(sendbuf(this%max_shape_(1), this%max_shape_(2), this%max_shape_(3)))
-    sendbuf(:i_end - i_start + 1, :j_end - j_start + 1, :) = field
-
-    if (this%rank_ == root_ .or. root_ == -1) then
-      allocate(recvbuf(this%max_shape_(1), this%max_shape_(2), this%max_shape_(3), 0:this%num_ranks_ - 1))
-    else
-      allocate(recvbuf(0, 0, 0, 0))
-    end if
-
-    if (root_ > -1) then
-      call MPI_Gather( &
-        sendbuf, size(sendbuf), MPI_DOUBLE, &
-        recvbuf, size(sendbuf), MPI_DOUBLE, &
-        root_, this%comm_, ierror &
-      )
-      call error(ierror /= MPI_SUCCESS, 'Problem with MPI_Gather', code = ierror)
-    else
-      call MPI_Allgather( &
-        sendbuf, size(sendbuf), MPI_DOUBLE, &
-        recvbuf, size(sendbuf), MPI_DOUBLE, &
-        this%comm_, ierror &
-      )
-      call error(ierror /= MPI_SUCCESS, 'Problem with MPI_Allgather', code = ierror)
-    end if
-
-    if (this%rank_ == root_ .or. root_ == -1) then
-      allocate(global_field(this%global_shape_(1), this%global_shape_(2), this%global_shape_(3)))
-      do rank = 0, this%num_ranks_ - 1
-        i_start = this%domains_(rank, 1) + 1
-        j_start = this%domains_(rank, 2) + 1
-        i_end   = this%domains_(rank, 3)
-        j_end   = this%domains_(rank, 4)
-
-        global_field(i_start:i_end, j_start:j_end, :) = recvbuf(:i_end - i_start + 1, :j_end - j_start + 1, :, rank)
-      end do
-
-      r = global_field
-    else
-      allocate(r(0, 0, 0))
-    end if
-  end function
     ! Integrate 4th-order diffusion equation by a certain number of iterations.
     !
     !  in_field          -- input field (nx x ny x nz with halo in x- and y-direction)
