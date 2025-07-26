@@ -68,10 +68,10 @@ $(TARGET): $(OBJS)
 	cp $(TARGET) stencil2d.x
 
 clean: 
-	-$(RM) -rf *~ *.o *.mod *.MOD *.i core.* *.out *.lst *.x *.x+orig *.x+[0-9]* *.dat *.report result_*.py report*.txt perf/* out*.txt
+	-$(RM) -rf *~ *.o *.mod *.MOD *.i core.* *.out *.lst *.x *.x+orig *.x+[0-9]* *.dat *.report result_*.py report*.txt perf/*
 
 clean_examples:
-	rm -f *.out weak.txt caching.txt caching2.txt out.txt out.png
+	rm -f *.out weak.txt caching.txt caching2.txt out.png
 
 distclean: clean
 	-$(RM) -rf *.png *.dat *.npy *.x *.x+orig* *.x+[0-9]*

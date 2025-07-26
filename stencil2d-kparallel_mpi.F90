@@ -52,7 +52,7 @@ program main
     !$omp end parallel
 
     if ( is_master() ) then
-        write(*, '(a)') '# ranks nx ny nz num_iter time'
+        write(*, '(a)') '# ranks nx ny nz num_iter time nx_rank0 ny_rank0'
         write(*, '(a)') 'data = np.array( [ \'
     end if
 
@@ -106,9 +106,10 @@ program main
 
         runtime = timer_get( timer_work )
         if ( is_master() ) &
-            write(*, '(a, i5, a, i5, a, i5, a, i5, a, i8, a, e15.7, a)') &
-                '[', num_rank(), ',', global_nx, ',', global_ny, ',', global_nz, &
-                ',', num_iter, ',', runtime, '], \'
+        write(*, '(a, i5, a, i5, a, i5, a, i5, a, i8, a, e15.7, a)') &
+            '[', num_rank(), ',', global_nx, ',', global_ny, ',', global_nz, ',', &
+            num_iter, ',', runtime, '], \'
+            
     end do
 
     if ( is_master() ) then
@@ -142,11 +143,19 @@ contains
         integer :: iter, i, j, k
 
         integer :: dims(3), nx, ny, nz
+
+            
         dims = p%shape()
         nx = dims(1) - 2 * p%num_halo()
         ny = dims(2) - 2 * p%num_halo()
         nz = dims(3)
+
         
+        if (is_master()) then
+            write(*, '(a)') ''
+            write(*, '(a, i5, a, i5, a)') '[', nx, ',', ny, ']'
+        end if
+
         ! this is only done the first time this subroutine is called (warmup)
         ! or when the dimensions of the fields change
         if ( allocated(tmp1_field) .and. &
