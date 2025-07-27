@@ -1,12 +1,2 @@
 runtimes = [[0.0]*11 for _ in range(73)]
-runtimes[1][1] = 0.7018004E+00
-runtimes[1][4] = 0.2904077E+00
-runtimes[1][16] = 0.3749232E+03
-runtimes[2][1] = 0.4685046E+00
-runtimes[2][4] = 0.2230182E+00
-runtimes[2][16] = 0.3757303E+03
-runtimes[3][1] = 0.3345510E+00
-runtimes[3][4] = 0.3827279E+00
-runtimes[3][16] = 0.3751925E+03
-runtimes[4][1] = 0.2764525E+00
-runtimes[4][4] = 0.4081513E+00
+runtimes[1][1] = 0.757343

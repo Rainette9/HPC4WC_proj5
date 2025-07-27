@@ -1,0 +1,5 @@
+dimensions = [[0.0]*17 for _ in range(73)]
+dimensions[1][1] = [128, 256]
+dimensions[1][2] = [128, 128]
+dimensions[1][4] = [64, 128]
+dimensions[2][1] = [128, 256]

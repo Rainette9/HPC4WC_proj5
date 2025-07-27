@@ -1,0 +1,5 @@
+runtimes = [[0.0]*17 for _ in range(73)]
+runtimes[1][1] = 0.1505681E+01
+runtimes[1][2] = 0.3382713E+02
+runtimes[1][4] = 0.5173060E+00
+runtimes[2][1] = 0.7997789E+00

@@ -1,0 +1,5 @@
+runtimes = [[0.0]*17 for _ in range(73)]
+runtimes[72][1] = 
+runtimes[72][2] = 
+runtimes[72][3] = 
+runtimes[72][4] = 
