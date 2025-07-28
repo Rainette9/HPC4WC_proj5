@@ -1,0 +1,73 @@
+pid 88277's current affinity list: 72-143
+======= perf stat ==========
+
+ Performance counter stats for './stencil2d-kparallel_mpi.x --nx 128 --ny 128 --nz 64 --num_iter 1024':
+
+    27,383,856,872      mem_access_rd:u                                                    
+       551,195,738      mem_access_wr:u                                                    
+        30,199,633      LLC-load-misses                                                    
+
+       0.434688191 seconds time elapsed
+
+      10.195577000 seconds user
+       0.795027000 seconds sys
+
+
+======= perf record ==========
+# To display the perf.data header info, please use --header/--header-only options.
+#
+#
+# Total Lost Samples: 0
+#
+# Samples: 36K of event 'cpu-clock:u'
+# Event count (approx.): 9124500000
+#
+# Overhead  Command          Shared Object              Symbol                                        
+# ........  ...............  .........................  ..............................................
+#
+    91.33%  stencil2d-kpara  libgomp.so.1.0.0           [.] omp_get_num_procs
+     2.30%  stencil2d-kpara  stencil2d-kparallel_mpi.x  [.] apply_diffusion.6._omp_fn.0
+     2.13%  stencil2d-kpara  libgomp.so.1.0.0           [.] 0x0000000000045394
+     1.05%  stencil2d-kpara  libc-2.31.so               [.] __memcpy_generic
+     1.02%  stencil2d-kpara  libpmi.so.0.6.0            [.] _pmi_mmap_tmp
+     0.71%  stencil2d-kpara  libmpi_gnu_123.so.12.0.0   [.] __aarch64_ldadd4_sync
+     0.42%  stencil2d-kpara  stencil2d-kparallel_mpi.x  [.] update_halo.5.constprop.1.isra.0
+     0.16%  stencil2d-kpara  libmpi_gnu_123.so.12.0.0   [.] MPIR_Waitall_impl
+     0.14%  stencil2d-kpara  libmpi_gnu_123.so.12.0.0   [.] MPIR_Wait_impl
+     0.13%  stencil2d-kpara  libmpi_gnu_123.so.12.0.0   [.] MPIDI_SHMI_progress
+     0.12%  stencil2d-kpara  libc-2.31.so               [.] __aarch64_swp4_rel
+     0.10%  stencil2d-kpara  libmpi_gnu_123.so.12.0.0   [.] MPIDU_genq_shmem_queue_dequeue.constprop.0
+     0.06%  stencil2d-kpara  libgomp.so.1.0.0           [.] omp_fulfill_event
+     0.04%  stencil2d-kpara  libmpi_gnu_123.so.12.0.0   [.] MPIDI_CRAY_Common_lmt_progress
+     0.04%  stencil2d-kpara  libmpi_gnu_123.so.12.0.0   [.] __aarch64_cas8_sync
+     0.04%  stencil2d-kpara  libmpi_gnu_123.so.12.0.0   [.] MPID_ST_progress_queue
+     0.03%  stencil2d-kpara  libc-2.31.so               [.] __aarch64_cas4_acq
+     0.02%  stencil2d-kpara  libc-2.31.so               [.] syscall
+     0.02%  stencil2d-kpara  stencil2d-kparallel_mpi.x  [.] memcpy@plt
+     0.02%  stencil2d-kpara  libgomp.so.1.0.0           [.] GOMP_single_copy_end
+     0.02%  stencil2d-kpara  libmpi_gnu_123.so.12.0.0   [.] MPIDI_CRAY_Common_lmt_complete_recv
+     0.01%  stencil2d-kpara  ld-2.31.so                 [.] do_lookup_x
+     0.01%  stencil2d-kpara  ld-2.31.so                 [.] _dl_lookup_symbol_x
+     0.01%  stencil2d-kpara  libc-2.31.so               [.] _int_free
+     0.01%  stencil2d-kpara  libc-2.31.so               [.] _int_malloc
+     0.01%  stencil2d-kpara  libc-2.31.so               [.] free
+     0.00%  stencil2d-kpara  [vdso]                     [.] __kernel_clock_gettime
+     0.00%  stencil2d-kpara  ld-2.31.so                 [.] _dl_relocate_object
+     0.00%  stencil2d-kpara  ld-2.31.so                 [.] _dl_setup_hash
+     0.00%  stencil2d-kpara  ld-2.31.so                 [.] check_match
+     0.00%  stencil2d-kpara  ld-2.31.so                 [.] strcmp
+     0.00%  stencil2d-kpara  libc-2.31.so               [.] getenv
+     0.00%  stencil2d-kpara  libc-2.31.so               [.] malloc
+     0.00%  stencil2d-kpara  libgomp.so.1.0.0           [.] syscall@plt
+     0.00%  stencil2d-kpara  libgomp.so.1.0.0           [.] 0x000000000004538c
+     0.00%  stencil2d-kpara  libmpi_gnu_123.so.12.0.0   [.] MPIDIU_get_buf_safe
+     0.00%  stencil2d-kpara  libmpi_gnu_123.so.12.0.0   [.] MPIDI_CRAY_Common_lmt_ctrl_send_rts_cb
+     0.00%  stencil2d-kpara  libmpi_gnu_123.so.12.0.0   [.] MPIDU_genq_shmem_queue_enqueue.isra.0
+     0.00%  stencil2d-kpara  libmpi_gnu_123.so.12.0.0   [.] MPIR_Request_create
+     0.00%  stencil2d-kpara  libpmi.so.0.6.0            [.] _pmi_smp_barrier_join
+     0.00%  stencil2d-kpara  stencil2d-kparallel_mpi.x  [.] free@plt
+
+
+#
+# (Cannot load tips.txt file, please install perf!)
+#
