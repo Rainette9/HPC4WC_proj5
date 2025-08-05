@@ -55,6 +55,17 @@ ifdef NOOPT
   TARGET = stencil2d-$(VERSION)-noopt.x
 endif
 endif
+ifeq "$(HOSTNAME)" "eiger-ln"
+  F90 = mpif90 -ffree-line-length-none #-L/user-tools/env/forge/lib/64 -lmap-sampler
+  FFLAGS = -g1 -O3 -fno-inline -fno-optimize-sibling-calls -march=native -funroll-loops -fopenmp -flto -fno-math-errno -fimplicit-none
+ifdef NOOPT
+  FFLAGS = -O0 -g -fbacktrace -fno-fast-math -ffree-line-length-none -fno-backslash \
+  -pedantic \
+  -fdump-core -ffpe-trap=invalid,zero,overflow -fbounds-check -finit-real=nan \
+  -finit-integer=9999999 -finit-logical=true -finit-character=35
+  TARGET = stencil2d-$(VERSION)-noopt.x
+endif
+endif
 ifndef F90
   $(error F90 is not set for $(HOSTNAME))
 endif
