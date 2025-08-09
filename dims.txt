@@ -1,2 +1,1 @@
 dimensions = [[0.0]*11 for _ in range(73)]
-dimensions[72][4] = [64, 64]

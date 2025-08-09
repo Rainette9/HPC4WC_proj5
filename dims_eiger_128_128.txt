@@ -1,0 +1,5 @@
+dimensions = [[0.0]*17 for _ in range(73)]
+dimensions[20][2] = [, ]
+dimensions[21][2] = [, ]
+dimensions[22][2] = [, ]
+dimensions[23][2] = [, ]
