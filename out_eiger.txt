@@ -1,2 +1,2 @@
 runtimes = [[0.0]*11 for _ in range(73)]
-runtimes[1][1] = 0.633285
+runtimes[1][1] = 0.641999
