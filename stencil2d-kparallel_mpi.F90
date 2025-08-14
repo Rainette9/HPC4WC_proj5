@@ -65,7 +65,7 @@ program main
         end if
 
         ! include partition MPI here 
-        p = Partitioner(MPI_COMM_WORLD, (/global_nx, global_ny, global_nz/), num_halo, periodic=(/.true., .true./))
+        ! p = Partitioner(MPI_COMM_WORLD, (/global_nx, global_ny, global_nz/), num_halo, periodic=(/.true., .true./))
         if ( is_master() ) & ! only for rank=0
             call setup()
 
