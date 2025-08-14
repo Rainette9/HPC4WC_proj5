@@ -1,17 +1,15 @@
 #!/bin/bash
-#SBATCH --job-name=MPI_OMP_128_128_all      # Job name
-#SBATCH --output=MPI_OMP_128_128_all.out      # Output file (%j = job ID)
-#SBATCH --error=MPI_OMP_128_128_all.err       # Error file
-#SBATCH --time=10:00:00            # Max run time (HH:MM:SS)
+#SBATCH --job-name=1node_MPI_OMP_128_128     # Job name
+#SBATCH --output=1node_MPI_OMP_128_128.out      # Output file (%j = job ID)
+#SBATCH --error=1node_MPI_OMP_128_128.err       # Error file
+#SBATCH --time=02:00:00            # Max run time (HH:MM:SS)
 #SBATCH --partition=normal         # Partition/queue
 
-#SBATCH --cpus-per-task=72
-#SBATCH --ntasks=16
+#SBATCH --nodes=1
 #SBATCH --hint=nomultithread
 
 
 # Set OpenMP environment variables
-# export OMP_NUM_THREADS=72
 export OMP_PLACES="cores"
 export OMP_PROC_BIND="close"
 
@@ -19,7 +17,7 @@ nx_len=128
 ny_len=128
 echo "nx_len = $nx_len, ny_len = $ny_len"
 
-file_name="all"
+file_name="1node"
 
 out_file="experiments/out_${nx_len}_${ny_len}_${file_name}.txt"
 dims_file="experiments/dims_${nx_len}_${ny_len}_${file_name}.txt"
@@ -29,25 +27,28 @@ if [[ $(hostname -s) == eiger-* ]]; then
   dims_file="experiments/dims_eiger_${nx_len}_${ny_len}_${file_name}.txt"
 fi
 
-if [ ! -f "$out_file" ]; then
-  echo "runtimes = [[0.0]*17 for _ in range(73)]" > "$out_file"
-fi
+# if [ ! -f "$out_file" ]; then
+  echo "runtimes = [[[0.0]*17 for _ in range(73)]for _ in range(20)]" > "$out_file"
+# fi
 
 if [ ! -f "$dims_file" ]; then
-  echo "dimensions = [[0.0]*17 for _ in range(73)]" > "$dims_file"
+  echo "dimensions = [[[0.0]*17 for _ in range(73)]for _ in range(20)]" > "$dims_file"
 fi
 
-for iteration in $(seq 1 20); do
+for iteration in $(seq 1 5); do
 
     for nthreads in $(seq 1 72); do
         export OMP_NUM_THREADS=$nthreads
     
         for nnodes in $(seq 1 16); do
+            if (( nthreads * nnodes > 288)); then
+              continue
+            fi
             echo "Running with $nthreads threads and $nnodes MPI tasks"
             if [[ $(hostname -s) == eiger-* ]]; then
-                output=$(uenv run prgenv-gnu/24.11:v2 --view=default -- srun --ntasks=$nnodes --cpus-per-task=$nthreads ./stencil2d-kparallel_mpi.x --nx 128 --ny 128 --nz 64 --num_iter 1024)
+                output=$(uenv run prgenv-gnu/24.11:v2 --view=default -- srun --ntasks=$nnodes --ntasks-per-node=$nnodes --cpus-per-task=$nthreads ./stencil2d-kparallel_mpi.x --nx 128 --ny 128 --nz 64 --num_iter 1024)
             else    
-                output=$(srun --ntasks=$nnodes --cpus-per-task=$nthreads ./stencil2d-kparallel_mpi.x --nx $nx_len --ny $ny_len --nz 64 --num_iter 1024)
+                output=$(srun --ntasks=$nnodes --ntasks-per-node=$nnodes --cpus-per-task=$nthreads ./stencil2d-kparallel_mpi.x --nx $nx_len --ny $ny_len --nz 64 --num_iter 1024)
             fi    
             data_line=$(echo "$output" | grep -oP '\[\s*\d+,\s*\d+,\s*\d+,\s*\d+,\s*\d+,\s*[\d.E+-]+\]')
             runtime=$(echo "$data_line" | sed 's/.*\[//' | sed 's/\]//' | cut -d',' -f6 | xargs)
