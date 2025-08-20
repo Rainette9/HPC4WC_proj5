@@ -1,2 +1,0 @@
-dimensions = [[0.0]*11 for _ in range(73)]
-dimensions[1][1] = [128, 128]
