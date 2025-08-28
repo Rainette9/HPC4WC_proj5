@@ -32,7 +32,7 @@ echo "======= taskset ==========" >> ${outf}
 taskset -cp $$ > ${outf} 2>&1
 
 echo "======= perf stat ==========" >> ${outf}
-perf stat -e mem_access_rd:u,mem_access_wr:u,LLC-load-misses:u "$@" 2>> ${outf}
+perf stat -e mem_access_rd:u,mem_access_wr:u,LLC-load-misses:u,FP_SCALE_OPS_SPEC,FP_FIXED_OPS_SPEC  "$@" 2>> ${outf}
 
 echo "======= perf record ==========" >> ${outf}
 perf record -e cpu-clock:u -o ${outd} "$@" >/dev/null 2>&1
