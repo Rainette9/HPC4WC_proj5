@@ -1,7 +1,7 @@
 #!/bin/bash -l
-#SBATCH --job-name=baseline_2048_2048   # Job name
-#SBATCH --output=error_outs/baseline_2048_2048.out      # Output file (%j = job ID)
-#SBATCH --time=05:00:00            # Max run time (HH:MM:SS)
+#SBATCH --job-name=1node_512_512   # Job name
+#SBATCH --output=error_outs/1node_512_512.out      # Output file (%j = job ID)
+#SBATCH --time=10:00:00            # Max run time (HH:MM:SS)
 #SBATCH --partition=normal         # Partition/queue
 #SBATCH --nodes=1
 #SBATCH --hint=nomultithread
@@ -12,16 +12,20 @@ export OMP_PLACES=cores
 export OMP_PROC_BIND=close
 
 
-nx_len=2048
-ny_len=2048
+nx_len=512
+ny_len=512
 
 nz_len=64
 
-
 echo "nx_len = $nx_len, ny_len = $ny_len"
 
-out_file="experiments_final/out_baseline_${nx_len}_${ny_len}.txt"
-dims_file="experiments_final/dims_baseline_${nx_len}_${ny_len}.txt"
+out_file="experiments_final/out_m_${nx_len}_${ny_len}.txt"
+dims_file="experiments_final/dims_m_${nx_len}_${ny_len}.txt"
+
+# --- Output CSV header ---
+# csv=experiments_final/metadata_${nx_len}_${ny_len}.csv
+# echo "nx,ny,iteration,ranks,threads,cores_on_node,numa_nodes,time_s,glups,notes" > "$csv"
+
 
 # if [ ! -f "$out_file" ]; then
 echo "runtimes = [[[0.0]*73 for _ in range(73)]for _ in range(6)]" > "$out_file"
@@ -32,11 +36,14 @@ echo "dimensions = [[[0.0]*73 for _ in range(73)]for _ in range(6)]" > "$dims_fi
 # fi
 
 for iteration in $(seq 1 5); do
-    for nthreads in $(seq 1 72); do
+    for nthreads in $(seq 1 72); do     
         for nranks in $(seq 1 72); do
+
+            # max_rpm=$(( 72 / nthreads )) # max ranks per module
+            # (( nranks > max_rpm )) && continue
         
             export OMP_NUM_THREADS=$nthreads
-            if (( nthreads * nranks > 72)); then
+            if (( nthreads * nranks > 288)); then
               continue
             fi
             echo "Running with $nthreads threads and $nranks MPI tasks"
@@ -44,11 +51,11 @@ for iteration in $(seq 1 5); do
           # # prints per-rank CPU ranges & NUMA. (Sanity checks to make sure we are only running on one CPU, only ran once 
           # # and after checking I commented them out.)
           #   srun -N 1 -n $nranks --ntasks-per-node=$nranks --cpus-per-task=$nthreads --cpu-bind=verbose,cores \
-          # --distribution=block:block --mem-bind=local -l bash -lc 'echo "rank=$SLURM_PROCID host=$(hostname)";
+          # --distribution=block:cyclic --mem-bind=local -l bash -lc 'echo "rank=$SLURM_PROCID host=$(hostname)";
           #           echo -n "Cpus_allowed_list: "; awk "/Cpus_allowed_list/ {print \$2}" /proc/self/status;
           #           numactl --show | egrep "cpubind|membind"'
             
-            output=$(srun -N 1 -n $nranks --ntasks-per-node=$nranks --cpus-per-task=$nthreads --cpu-bind=cores --distribution=block:block --mem-bind=local ./stencil2d-kparallel_mpi.x --nx $nx_len --ny $ny_len --nz $nz_len --num_iter 1024)
+            output=$(srun -N 1 -n $nranks --ntasks-per-node=$nranks --cpus-per-task=$nthreads --cpu-bind=cores --distribution=block:cyclic --mem-bind=local ./stencil2d-kparallel_mpi.x --nx $nx_len --ny $ny_len --nz $nz_len --num_iter 1024)
 
             data_line=$(echo "$output" | grep -oP '\[\s*\d+,\s*\d+,\s*\d+,\s*\d+,\s*\d+,\s*[\d.E+-]+\]')
             runtime=$(echo "$data_line" | sed 's/.*\[//' | sed 's/\]//' | cut -d',' -f6 | xargs)
