@@ -1,0 +1,4 @@
+dimensions = [[[0.0]*299 for _ in range(299)]for _ in range(20)]
+dimensions[288][1] = [1024, 1024]
+dimensions[72][4] = [512, 512]
+dimensions[36][8] = [512, 256]
