@@ -1,3 +1,4 @@
+import re
 import numpy as np
 import matplotlib.pyplot as plt
 from cmcrameri import cm 
@@ -159,10 +160,82 @@ def plot_heatmap(times_masked, nx_len, ny_len, mpi_ranks="all", omp_threads='all
     return fig
 
 
+######################################################################
 
+def load_runtimes(path):
+    pat = re.compile(r"runtimes\[(\d+)\]\[(\d+)\]\[(\d+)\]\s*=\s*([0-9.Ee+\-]+)")
+    entries = []
+    with open(path) as f:
+        for line in f:
+            m = pat.search(line)
+            if not m:
+                continue
+            i, j, k, val = m.groups()
+            entries.append((int(i), int(j), int(k), float(val)))
 
+    if not entries:
+        raise ValueError("No runtimes[...] entries found.")
 
+    imax = max(i for i,_,_,_ in entries)
+    jmax = max(j for _,j,_,_ in entries)
+    kmax = max(k for _,_,k,_ in entries)
 
+    arr = np.zeros((imax + 1, jmax + 1, kmax + 1), dtype=float)
+    
+    for i, j, k, val in entries:
+        arr[i, j, k] = val
+    return arr
+
+def get_runtimes(size, folder, method='mean'): #method = 'one'
+    if size == 's':
+        ratio_1_1 = load_runtimes(f"{folder}/out_{size}_{128}_{128}.txt")
+        ratio_2_1 = load_runtimes(f"{folder}/out_{size}_{176}_{88}.txt")
+        ratio_1_2 = load_runtimes(f"{folder}/out_{size}_{88}_{176}.txt")
+        ratio_4_1 = load_runtimes(f"{folder}/out_{size}_{256}_{64}.txt")
+        ratio_1_4 = load_runtimes(f"{folder}/out_{size}_{64}_{256}.txt")
+    elif size == 'm':
+        ratio_1_1 = load_runtimes(f"{folder}/out_{size}_{512}_{512}.txt")
+        ratio_2_1 = load_runtimes(f"{folder}/out_{size}_{720}_{360}.txt")
+        ratio_1_2 = load_runtimes(f"{folder}/out_{size}_{360}_{720}.txt")
+        ratio_4_1 = load_runtimes(f"{folder}/out_{size}_{1024}_{256}.txt")
+        ratio_1_4 = load_runtimes(f"{folder}/out_{size}_{256}_{1024}.txt")
+    else:
+        ratio_1_1 = load_runtimes(f"{folder}/out_{size}_{2048}_{2048}.txt")
+        ratio_2_1 = load_runtimes(f"{folder}/out_{size}_{2896}_{1448}.txt")
+        ratio_1_2 = load_runtimes(f"{folder}/out_{size}_{1448}_{2896}.txt")
+        ratio_4_1 = load_runtimes(f"{folder}/out_{size}_{4096}_{1024}.txt")
+        ratio_1_4 = load_runtimes(f"{folder}/out_{size}_{1024}_{4096}.txt")
+
+    ratio_1_1_masked = np.where(ratio_1_1>0, ratio_1_1, np.nan)
+    ratio_2_1_masked = np.where(ratio_2_1>0, ratio_2_1, np.nan)
+    ratio_1_2_masked = np.where(ratio_1_2>0, ratio_1_2, np.nan)
+    ratio_4_1_masked = np.where(ratio_4_1>0, ratio_4_1, np.nan)    
+    ratio_1_4_masked = np.where(ratio_1_4>0, ratio_1_4, np.nan)
+
+    if method == 'mean':
+        ratio_1_1 = np.nanmean(ratio_1_1_masked, 0)
+        ratio_2_1 = np.nanmean(ratio_2_1_masked, 0)
+        ratio_1_2 = np.nanmean(ratio_1_2_masked, 0)
+        ratio_4_1 = np.nanmean(ratio_4_1_masked, 0)
+        ratio_1_4 = np.nanmean(ratio_1_4_masked, 0)
+    else:
+        ratio_1_1 = ratio_1_1_masked[1,:,:]
+        ratio_2_1 = ratio_2_1_masked[1,:,:]
+        ratio_1_2 = ratio_1_2_masked[1,:,:]
+        ratio_4_1 = ratio_4_1_masked[1,:,:]
+        ratio_1_4 = ratio_1_4_masked[1,:,:]
+
+    return ratio_1_1, ratio_2_1, ratio_1_2, ratio_4_1, ratio_1_4
+
+def get_best_speedup(ratio_mean):
+    T_baseline=ratio_mean[1][1]
+    speedup = T_baseline/ratio_mean
+
+    best = np.nanmax(speedup) #value
+    best_idx = np.unravel_index(np.nanargmax(speedup), speedup.shape) #index
+
+    return best, best_idx
+    
 
 
 
