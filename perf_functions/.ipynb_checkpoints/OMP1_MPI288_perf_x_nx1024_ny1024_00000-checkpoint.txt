@@ -1,0 +1,19 @@
+======= taskset ==========
+pid 186996's current affinity list: 0
+======= perf stat ==========
+
+ Performance counter stats for './stencil2d-kparallel_mpi.x --nx 1024 --ny 1024 --nz 64 --num_iter 1024':
+
+    10,763,234,834      mem_access_rd:u                                                    
+       504,564,517      mem_access_wr:u                                                    
+        37,165,569      LLC-load-misses                                                    
+        76,112,108      FP_SCALE_OPS_SPEC                                                  
+     2,872,985,422      FP_FIXED_OPS_SPEC                                                  
+
+       7.942899242 seconds time elapsed
+
+       4.387280000 seconds user
+       0.387990000 seconds sys
+
+
+======= perf record (functions, rank 0) ==========

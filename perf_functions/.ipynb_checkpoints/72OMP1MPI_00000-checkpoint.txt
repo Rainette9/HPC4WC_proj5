@@ -1,0 +1,54 @@
+pid 87444's current affinity list: 0-287
+======= perf stat ==========
+
+ Performance counter stats for './stencil2d-kparallel_mpi.x --nx 128 --ny 128 --nz 64 --num_iter 1024':
+
+     3,396,631,750      mem_access_rd:u                                                    
+       722,636,580      mem_access_wr:u                                                    
+         1,502,745      LLC-load-misses                                                    
+
+       0.931701992 seconds time elapsed
+
+       0.733777000 seconds user
+       0.048918000 seconds sys
+
+
+======= perf record ==========
+# To display the perf.data header info, please use --header/--header-only options.
+#
+#
+# Total Lost Samples: 0
+#
+# Samples: 2K of event 'cpu-clock:u'
+# Event count (approx.): 728500000
+#
+# Overhead  Command          Shared Object                 Symbol                                               
+# ........  ...............  ............................  .....................................................
+#
+    85.28%  stencil2d-kpara  stencil2d-kparallel_mpi.x     [.] apply_diffusion.6._omp_fn.0
+    10.88%  stencil2d-kpara  libc-2.31.so                  [.] __memcpy_generic
+     1.68%  stencil2d-kpara  stencil2d-kparallel_mpi.x     [.] update_halo.5.constprop.1.isra.0
+     1.13%  stencil2d-kpara  stencil2d-kparallel_mpi.x     [.] memcpy@plt
+     0.24%  stencil2d-kpara  ld-2.31.so                    [.] _dl_relocate_object
+     0.10%  stencil2d-kpara  libmpi_gnu_123.so.12.0.0      [.] MPIDI_SHMI_progress
+     0.10%  stencil2d-kpara  libmpi_gnu_123.so.12.0.0      [.] __aarch64_cas8_sync
+     0.07%  stencil2d-kpara  ld-2.31.so                    [.] do_lookup_x
+     0.07%  stencil2d-kpara  libmpi_gnu_123.so.12.0.0      [.] __aarch64_ldadd4_sync
+     0.03%  stencil2d-kpara  ld-2.31.so                    [.] _dl_fixup
+     0.03%  stencil2d-kpara  ld-2.31.so                    [.] _dl_lookup_symbol_x
+     0.03%  stencil2d-kpara  ld-2.31.so                    [.] _dl_map_object_deps
+     0.03%  stencil2d-kpara  ld-2.31.so                    [.] check_match
+     0.03%  stencil2d-kpara  libc-2.31.so                  [.] __aarch64_swp4_rel
+     0.03%  stencil2d-kpara  libc-2.31.so                  [.] _int_malloc
+     0.03%  stencil2d-kpara  libc-2.31.so                  [.] getenv
+     0.03%  stencil2d-kpara  libgomp.so.1.0.0              [.] GOMP_parallel
+     0.03%  stencil2d-kpara  libmpi_gnu_123.so.12.0.0      [.] MPIR_Request_create
+     0.03%  stencil2d-kpara  libmpi_gnu_123.so.12.0.0      [.] PMPI_Irecv
+     0.03%  stencil2d-kpara  libmpi_gnu_123.so.12.0.0      [.] PMPI_Isend
+     0.03%  stencil2d-kpara  libmpifort_gnu_123.so.12.0.0  [.] mpi_irecv__
+     0.03%  stencil2d-kpara  libstdc++.so.6.0.32           [.] std::chrono::tzdb_list::const_iterator::operator*
+
+
+#
+# (Cannot load tips.txt file, please install perf!)
+#
