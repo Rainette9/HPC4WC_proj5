@@ -160,7 +160,7 @@ def plot_heatmap(times_masked, nx_len, ny_len, mpi_ranks="all", omp_threads='all
     return fig
 
 
-######################################################################
+############### Load Data  ####################################
 
 def load_runtimes(path):
     pat = re.compile(r"runtimes\[(\d+)\]\[(\d+)\]\[(\d+)\]\s*=\s*([0-9.Ee+\-]+)")
@@ -187,24 +187,24 @@ def load_runtimes(path):
     return arr
 
 def get_runtimes(size, folder, method='mean'): #method = 'one'
-    if size == 's':
-        ratio_1_1 = load_runtimes(f"{folder}/out_{size}_{128}_{128}.txt")
-        ratio_2_1 = load_runtimes(f"{folder}/out_{size}_{176}_{88}.txt")
-        ratio_1_2 = load_runtimes(f"{folder}/out_{size}_{88}_{176}.txt")
-        ratio_4_1 = load_runtimes(f"{folder}/out_{size}_{256}_{64}.txt")
-        ratio_1_4 = load_runtimes(f"{folder}/out_{size}_{64}_{256}.txt")
-    elif size == 'm':
-        ratio_1_1 = load_runtimes(f"{folder}/out_{size}_{512}_{512}.txt")
-        ratio_2_1 = load_runtimes(f"{folder}/out_{size}_{720}_{360}.txt")
-        ratio_1_2 = load_runtimes(f"{folder}/out_{size}_{360}_{720}.txt")
-        ratio_4_1 = load_runtimes(f"{folder}/out_{size}_{1024}_{256}.txt")
-        ratio_1_4 = load_runtimes(f"{folder}/out_{size}_{256}_{1024}.txt")
-    else:
-        ratio_1_1 = load_runtimes(f"{folder}/out_{size}_{2048}_{2048}.txt")
-        ratio_2_1 = load_runtimes(f"{folder}/out_{size}_{2896}_{1448}.txt")
-        ratio_1_2 = load_runtimes(f"{folder}/out_{size}_{1448}_{2896}.txt")
-        ratio_4_1 = load_runtimes(f"{folder}/out_{size}_{4096}_{1024}.txt")
-        ratio_1_4 = load_runtimes(f"{folder}/out_{size}_{1024}_{4096}.txt")
+    if size == 'small':
+        ratio_1_1 = load_runtimes(f"{folder}/out_s_{128}_{128}.txt")
+        ratio_2_1 = load_runtimes(f"{folder}/out_s_{176}_{88}.txt")
+        ratio_1_2 = load_runtimes(f"{folder}/out_s_{88}_{176}.txt")
+        ratio_4_1 = load_runtimes(f"{folder}/out_s_{256}_{64}.txt")
+        ratio_1_4 = load_runtimes(f"{folder}/out_s_{64}_{256}.txt")
+    elif size == 'medium':
+        ratio_1_1 = load_runtimes(f"{folder}/out_m_{512}_{512}.txt")
+        ratio_2_1 = load_runtimes(f"{folder}/out_m_{720}_{360}.txt")
+        ratio_1_2 = load_runtimes(f"{folder}/out_m_{360}_{720}.txt")
+        ratio_4_1 = load_runtimes(f"{folder}/out_m_{1024}_{256}.txt")
+        ratio_1_4 = load_runtimes(f"{folder}/out_m_{256}_{1024}.txt")
+    elif size == 'large':
+        ratio_1_1 = load_runtimes(f"{folder}/out_l_{2048}_{2048}.txt")
+        ratio_2_1 = load_runtimes(f"{folder}/out_l_{2896}_{1448}.txt")
+        ratio_1_2 = load_runtimes(f"{folder}/out_l_{1448}_{2896}.txt")
+        ratio_4_1 = load_runtimes(f"{folder}/out_l_{4096}_{1024}.txt")
+        ratio_1_4 = load_runtimes(f"{folder}/out_l_{1024}_{4096}.txt")
 
     ratio_1_1_masked = np.where(ratio_1_1>0, ratio_1_1, np.nan)
     ratio_2_1_masked = np.where(ratio_2_1>0, ratio_2_1, np.nan)
@@ -226,44 +226,227 @@ def get_runtimes(size, folder, method='mean'): #method = 'one'
         ratio_1_4 = ratio_1_4_masked[1,:,:]
 
     return ratio_1_1, ratio_2_1, ratio_1_2, ratio_4_1, ratio_1_4
-
-def get_best_speedup(ratio_mean):
-    T_baseline=ratio_mean[1][1]
-    speedup = T_baseline/ratio_mean
-
-    best = np.nanmax(speedup) #value
-    best_idx = np.unravel_index(np.nanargmax(speedup), speedup.shape) #index
-
-    return best, best_idx
     
+def get_results(folder, sizes=['small', 'medium', 'large'], 
+                ratios = ["1:1","2:1","1:2","4:1","1:4"],method='mean'):
+
+    results = {}
+
+    for size in sizes:
+        results[size] = {}
+        for ratio in ratios:
+            results[size][ratio] = {}
+        r_11, r_21, r_12, r_41, r_14 = get_runtimes(size, folder, method)
+        results[size]['1:1']['runtime'] = r_11
+        results[size]['2:1']['runtime'] = r_21
+        results[size]['1:2']['runtime'] = r_12
+        results[size]['4:1']['runtime'] = r_41
+        results[size]['1:4']['runtime'] = r_14
+
+    results['small']['1:1']['dims'] = (128, 128)
+    results['small']['2:1']['dims'] = (176, 88)
+    results['small']['1:2']['dims'] = (88, 176)
+    results['small']['4:1']['dims'] = (256, 64)
+    results['small']['1:4']['dims'] = (64, 256)
+
+    results['medium']['1:1']['dims'] = (512, 512)
+    results['medium']['2:1']['dims'] = (720, 360)
+    results['medium']['1:2']['dims'] = (360, 720)
+    results['medium']['4:1']['dims'] = (1024, 256)
+    results['medium']['1:4']['dims'] = (256, 1024)
+
+    results['large']['1:1']['dims'] = (2048, 2048)
+    results['large']['2:1']['dims'] = (2896, 1448)
+    results['large']['1:2']['dims'] = (1448, 2896)
+    results['large']['4:1']['dims'] = (4096, 1024)
+    results['large']['1:4']['dims'] = (1024, 4096)        
+
+    for size in sizes:
+        for ratio in ratios:
+            runtimes = results[size][ratio]['runtime']
+            T_baseline = runtimes[1][1]
+            results[size][ratio]['speedup'] = T_baseline/runtimes
+
+    return results
+
+###################################################
 
 
+def get_best_speedups(results, sizes, ratios, threads, ranks):
+    best_speedups = {}
+    for size in sizes:
+        best_speedups[size] = {}
+        for ratio in ratios:
+            best_speedups[size][ratio] = {}
+            speedup = results[size][ratio]['speedup']
+
+            # Get best speedups from the threads and ranks selected
+            best = 0
+            best_pair = 0
+            for thread in threads:
+                for rank in ranks:
+                    v = speedup[thread, rank]
+                    if np.isnan(v):
+                        continue
+                    if v > best:
+                        best = v
+                        best_pair = (thread, rank)
+            best_speedups[size][ratio]['value'] = best
+            best_speedups[size][ratio]['threads_ranks'] = best_pair
+            
+    return best_speedups
 
 
+def grouped_shape_bars(data, sizes, ratios=("1:4","1:2","1:1","2:1","4:1"),
+    metric_name="speedups", ylim_pad=0.10, bar_width=0.15,
+    rotate_xticks=0, title=None, savepath=None):
 
+    # build matrix values[size_idx, shape_idx]
+    V = []
+    for sz in sizes:
+        row = []
+        for sh in ratios:
+            row.append(data[sz][sh]['value'])
+        V.append(row)
+    V = np.array(V, dtype=float)  # shape [S, H]
+    S, H = V.shape
 
+    x = np.arange(S)  # group centers
+    total_width = H * bar_width
+    start = -0.5 * total_width + 0.5 * bar_width
 
+    fig, ax = plt.subplots(figsize=(max(6, 1.6*S), 3.8))
+    bars = []
+    for j, sh in enumerate(ratios):
+        offs = start + j * bar_width
+        bj = ax.bar(x + offs, V[:, j], width=bar_width, label=sh)
+        bars.append(bj)
 
+    ax.set_xticks(x)
+    ax.set_xticklabels(sizes, rotation=rotate_xticks)
+    ax.set_xlabel("Domain size (constant area)")
+    ax.set_ylabel(metric_name)
+    if title:
+        ax.set_title(title)
+    ax.legend(title="Aspect ratio (nx:ny)", ncols=min(H, 5))
 
+    # y-limits with padding
+    finite_vals = V[np.isfinite(V)]
+    if finite_vals.size:
+        ymin = max(0, finite_vals.min()*0.9)
+        ymax = finite_vals.max() * (1 + ylim_pad)
+        ax.set_ylim(ymin, ymax)
 
+    ax.grid(axis="y", linewidth=0.5)
+    fig.tight_layout()
+    if savepath:
+        fig.savefig(savepath, dpi=200, bbox_inches="tight")
+    return fig, ax
 
+######### Strong Scaling ##################
 
+def build_curves(results, sizes, ratios, threads_vals, ranks_vals, metric='speedup'):
+    """
+    For each (size,shape), produce best-per-total-cores curve.
+    metric: "speedup" | "runtime"
+    """
+    curves = {}
+    for size in sizes:
+        curves[size] = {}
+        for ratio in ratios:
+            runtime = results[size][ratio]["runtime"]
 
+            # Get best_vs_total_cores
+            best = {}
+            best_pair = {}
+            for thread in threads_vals:
+                for rank in ranks_vals:
+                    v = runtime[thread, rank]
+                    if np.isnan(v):
+                        continue
+                    C = int(thread) * int(rank)
+                    if (C not in best) or (v < best[C]):
+                        best[C] = v
+                        best_pair[C] = (thread, rank)
+            cores = np.array(sorted(best.keys()))
+            y = np.array([best[c] for c in cores], dtype=float)
+            pairs = [best_pair[c] for c in cores]
 
+            if len(cores):
+                if metric=='speedup':
+                    y = y[0] / y
+                curves[size][ratio] = {"cores": cores, "y": y, "pairs": pairs}
+            
+    return curves
 
+def plot_by_size(curves, sizes, shapes, ylabel="Speedup", title=None, save=None):
+    """
+    One figure per size; lines = shapes.
+    """
+    figs = []
+    for sz in sizes:
+        fig, ax = plt.subplots()
+        for sh in shapes:
+            ax.plot(curves[sz][sh]["cores"], curves[sz][sh]["y"], marker=".", label=sh)
+        ax.plot(curves[sz][sh]["cores"], curves[sz][sh]["cores"], linestyle='dashed', color='black', label='Ideal')
+        ax.set_xscale("log", base=2)
+        ax.set_yscale("log", base=2)
+        ax.set_xlabel("Total cores (ranks × threads)")
+        ax.set_ylabel(ylabel)
+        ax.set_title(f"Strong scaling — {sz}")
+        ax.grid(True, which="both", linewidth=0.5)
+        ax.legend(title="Dimensions ratio")
+        fig.tight_layout()
+        if save:
+            fig.savefig(f"{save}_{sz}.png", dpi=200, bbox_inches="tight")
+        figs.append(fig)
+    return figs
 
+def plot_ss_OMP(results, sizes, shapes, threads, rank=1, ylabel="Speedup", title=None, save=None):
+    """
+    One figure per size; lines = shapes.
+    """
+    figs = []
+    for sz in sizes:
+        fig, ax = plt.subplots()
+        for sh in shapes:
+            ax.plot(threads, results[sz][sh]["speedup"][threads, rank], marker=".", label=sh)
+        ax.plot(threads, threads, linestyle='dashed', color='black', label='Ideal')
+        ax.set_xscale("log", base=2)
+        ax.set_yscale("log", base=2)
+        ax.set_xlabel("OMP threads")
+        ax.set_ylabel(ylabel)
+        ax.set_title(f"Strong scaling OpenMP — {sz}")
+        ax.grid(True, which="both", linewidth=0.5)
+        ax.legend(title="Dimensions ratio")
+        fig.tight_layout()
+        if save:
+            fig.savefig(f"{save}_{sz}.png", dpi=200, bbox_inches="tight")
+        figs.append(fig)
+    return figs
 
-
-
-
-
-
-
-
-
-
-
-
+def plot_ss_MPI(results, sizes, shapes, thread, ranks, ylabel="Speedup", title=None, save=None):
+    """
+    One figure per size; lines = shapes.
+    """
+    figs = []
+    for sz in sizes:
+        fig, ax = plt.subplots()
+        for sh in shapes:
+            ax.plot(ranks, results[sz][sh]["speedup"][thread, ranks], marker=".", label=sh)
+        ax.plot(ranks, ranks, linestyle='dashed', color='black', label='Ideal')
+        ax.set_xscale("log", base=2)
+        ax.set_yscale("log", base=2)
+        ax.set_xlabel("MPI ranks")
+        ax.set_ylabel(ylabel)
+        ax.set_title(f"Strong scaling MPI — {sz}")
+        ax.grid(True, which="both", linewidth=0.5)
+        ax.legend(title="Dimensions ratio")
+        fig.tight_layout()
+        if save:
+            fig.savefig(f"{save}_{sz}.png", dpi=200, bbox_inches="tight")
+        figs.append(fig)
+    return figs
 
 
 
