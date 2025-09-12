@@ -1,5 +1,0 @@
-dimensions = [[0.0]*17 for _ in range(73)]
-dimensions[1][1] = [256, 128]
-dimensions[1][2] = [256, 64]
-dimensions[1][4] = [128, 64]
-dimensions[2][1] = [256, 128]
