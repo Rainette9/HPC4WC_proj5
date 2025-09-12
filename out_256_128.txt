@@ -1,5 +1,0 @@
-runtimes = [[0.0]*17 for _ in range(73)]
-runtimes[1][1] = 0.1464896E+01
-runtimes[1][2] = 0.3616994E+02
-runtimes[1][4] = 0.4780789E+00
-runtimes[2][1] = 0.7473862E+00
